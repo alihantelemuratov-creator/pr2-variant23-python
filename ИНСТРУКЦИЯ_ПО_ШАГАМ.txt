@@ -1,0 +1,11 @@
+Практическая работа №2. Вариант №23.
+
+Этап 1. Установить Python и зависимости.
+Создать окружение python -m venv .venv.
+Активировать .venv\\Scripts\\activate.bat.
+Запустить примеры из examples через python -m src.cli.
+Проверить: python -m pytest tests/test_cli.py.
+Этап 2. Добавить HTTP API, клиента, MBT и coverage.
+Этап 3. Добавить TinyDB и повторить тестирование.
+
+Вычислительная задача пока демонстрационная.
