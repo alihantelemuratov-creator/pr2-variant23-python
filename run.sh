@@ -1,2 +1,2 @@
 #!/bin/sh
-python3 -m src.cli "$@"
+python3 -m src.server "$@"

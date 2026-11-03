@@ -1,2 +1,2 @@
 @echo off
-python -m src.cli %*
+python -m src.server %*
