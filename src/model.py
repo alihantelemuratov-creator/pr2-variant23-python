@@ -36,6 +36,42 @@ class MemoryRepository:
         """Хранилище в памяти не требует закрытия."""
 
 
+class TinyDBRepository:
+    """Документ-ориентированная СУБД TinyDB (этап 3)."""
+
+    def __init__(self, path):
+        from tinydb import Query, TinyDB
+
+        self.database = TinyDB(path, ensure_ascii=False)
+        self.query = Query()
+
+    def save(self, table, item):
+        """Создать или заменить документ."""
+        self.database.table(table).upsert(
+            dict(item), self.query.uid == item["uid"]
+        )
+        return dict(item)
+
+    def read(self, table, uid):
+        """Прочитать документ по UID."""
+        item = self.database.table(table).get(self.query.uid == uid)
+        return dict(item) if item else None
+
+    def collect(self, table, **criteria):
+        """Найти документы по указанным полям."""
+        items = self.database.table(table).all()
+        return [
+            dict(item) for item in sorted(items, key=lambda x: x["uid"])
+            if all(
+                item.get(key) == value for key, value in criteria.items()
+            )
+        ]
+
+    def close(self):
+        """Закрыть базу."""
+        self.database.close()
+
+
 class DataModel:
     """Операции модели данных с названиями методов API-клиента."""
 

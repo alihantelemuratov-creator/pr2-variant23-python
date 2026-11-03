@@ -1,3 +1,4 @@
+tinydb>=4.8,<5
 pytest>=8,<10
 hypothesis>=6,<7
 coverage>=7,<8

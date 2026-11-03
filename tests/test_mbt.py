@@ -1,6 +1,8 @@
 """MBT: RuleBasedStateMachine из hypothesis."""
 
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from threading import Thread
 
 from hypothesis import settings
@@ -8,7 +10,7 @@ from hypothesis.stateful import RuleBasedStateMachine, initialize, rule
 from hypothesis.strategies import integers
 
 from src.client import APIClient
-from src.model import DataModel, MemoryRepository
+from src.model import DataModel, MemoryRepository, TinyDBRepository
 from src.server import make_server
 
 
@@ -18,8 +20,10 @@ class APIMachine(RuleBasedStateMachine):
     @initialize()
     def start(self):
         """Создать тестовый HTTP-сервер."""
+        self.directory = TemporaryDirectory()
+        self.repository = self.make_repository()
         self.server = make_server(
-            "127.0.0.1", 0, DataModel(MemoryRepository()), True
+            "127.0.0.1", 0, DataModel(self.repository), True
         )
         self.thread = Thread(
             target=self.server.serve_forever, daemon=True
@@ -29,6 +33,10 @@ class APIMachine(RuleBasedStateMachine):
             f"http://127.0.0.1:{self.server.server_port}"
         )
         self.client.save_member(1)
+
+    def make_repository(self):
+        """Создать память для тестирования."""
+        return MemoryRepository()
 
     @rule(uid=integers(min_value=1, max_value=50))
     def member(self, uid):
@@ -56,6 +64,21 @@ class APIMachine(RuleBasedStateMachine):
         self.server.shutdown()
         self.server.server_close()
         self.thread.join()
+        self.repository.close()
+        self.directory.cleanup()
+
+
+class TinyDBMachine(APIMachine):
+    """Тот же автомат для TinyDB."""
+
+    def make_repository(self):
+        """Разместить TinyDB во временном каталоге."""
+        path = Path(self.directory.name) / "test_db.json"
+        return TinyDBRepository(str(path))
+
+
+TestTinyDB = TinyDBMachine.TestCase
+TestTinyDB.settings = settings(max_examples=10, stateful_step_count=5)
 
 
 TestAPI = APIMachine.TestCase

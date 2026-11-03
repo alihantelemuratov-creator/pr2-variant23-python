@@ -8,10 +8,11 @@ import subprocess
 import sys
 import tempfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from time import monotonic
 from urllib.parse import parse_qs, urlsplit
 
-from src.model import DataModel, MemoryRepository
+from src.model import DataModel, MemoryRepository, TinyDBRepository
 
 
 ROUTES = (
@@ -200,8 +201,15 @@ def main(argv=None):
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--test-mode", action="store_true")
+    parser.add_argument("--backend", choices=("memory", "tinydb"),
+                        default="memory")
+    parser.add_argument("--db", default="data/variant23.json")
     args = parser.parse_args(argv)
-    repo = MemoryRepository()
+    if args.backend == "tinydb":
+        Path(args.db).parent.mkdir(parents=True, exist_ok=True)
+        repo = TinyDBRepository(args.db)
+    else:
+        repo = MemoryRepository()
     server = make_server(
         args.host, args.port, DataModel(repo), args.test_mode
     )

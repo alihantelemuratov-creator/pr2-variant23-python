@@ -50,6 +50,43 @@ python -m coverage report -m
 В `src/client.py` реализованы методы клиента с теми же именами,
 что у `DataModel`. MBT запускается через `RuleBasedStateMachine`.
 
-## Этап 3
+## Этап 3. TinyDB
 
-Подключение TinyDB в следующем коммите.
+Данные можно сохранять в файл с помощью документ-ориентированной СУБД
+TinyDB. Интерфейс `DataModel` не меняется: слой хранения заменяется
+`TinyDBRepository` с методами `save`, `read`, `collect`, `close`.
+
+```cmd
+python -m pip install -r requirements.txt
+python -m src.server --backend tinydb --db data/variant23.json
+```
+
+## Тестирование
+
+Сценарии MBT для памяти и TinyDB находятся в `tests/test_mbt.py`.
+Для отчёта о покрытии ветвей:
+
+```cmd
+python -m coverage run --branch -m pytest tests/test_mbt.py -v
+python -m coverage report -m
+python -m coverage html
+```
+
+Откройте `htmlcov/index.html`, чтобы увидеть отчёт покрытия.
+Численный результат покрытия необходимо получить при реальном запуске;
+в документации он заранее не заявляется.
+
+## Формула отчёта (23)
+
+Выполняется объединение `Member`, `Task` и `Response`,
+фильтрация ответов за последние 9 минут и проекция полей
+`Member.ip`, `Response.duration`, `Task.tags`.
+
+## Сдача
+
+Опубликовать публичный Git-репозиторий с коммитами для всех этапов.
+Распечатать страницу README в PDF через браузер (Ctrl+P)
+и предоставить в СДО PDF и URL-адрес репозитория.
+
+**Ограничение:** вычислительная задача — демонстрационная; требуется
+замена в соответствии с темой курсовой работы.
